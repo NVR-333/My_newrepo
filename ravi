@@ -1,0 +1,31 @@
+-- 1. Create a database
+CREATE DATABASE my_first_db;
+
+-- 2. Use the newly created database
+USE my_first_db;
+
+-- 3. Create a table within the database
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) UNIQUE
+);
+
+-- 4. Insert data into the table
+INSERT INTO users (username, email) VALUES ('john_doe', 'john.doe@example.com');
+INSERT INTO users (username, email) VALUES ('jane_smith', 'jane.smith@example.com');
+
+-- 5. Retrieve all data from the table
+SELECT * FROM users;
+
+-- 6. Retrieve specific data from the table
+SELECT username FROM users WHERE id = 1;
+
+-- 7. Update data in the table
+UPDATE users SET email = 'john.doe.new@example.com' WHERE username = 'john_doe';
+
+-- 8. Delete data from the table
+DELETE FROM users WHERE id = 2;
+
+-- 9. Retrieve all data after deletion
+SELECT * FROM users;
