@@ -1,0 +1,50 @@
+pipeline{
+    agent any
+    tools{
+        maven "my_maven"
+    }
+    stages{
+        stage("Code"){
+            steps{
+                git 'https://github.com/NVR-333/one.git'
+            }
+        }
+        stage("CQN"){
+            steps{
+                withSonarQubeEnv('mysonar') {
+                    sh ''' mvn sonar:sonar \
+                           -Dsonar.projectKey=mysonar \
+                           -Dsonar.host.url=http://44.223.77.71:9000 \
+                           -Dsonar.login=995f9deb883ceb2918422ef5b3ed81bc9bcaaeb0'''
+                }
+            }
+        }
+        stage("Build"){
+            steps{
+                sh ("mvn clean package")
+            }
+        }
+        stage("Artifact"){
+            steps{
+                nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'target/myweb-8.6.14.war', type: 'war']], credentialsId: 'My_test', groupId: 'in.javahome', nexusUrl: '13.220.44.192:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'my_repo', version: '8.6.14'
+            }
+        }
+        stage("Deploy"){
+            input{
+                message("can i accept ?")
+            }
+            steps{
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'developer', path: '', url: 'http://44.221.81.238:8080/')], contextPath: 'application', war: 'target/*.war'
+            }
+        }
+    }
+    post {
+        success {
+            mail to: 'awsanddevops18@gmail.com',
+
+                 subject: "SUCCESS: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+
+                 body: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} \n build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+        }
+    }
+}
