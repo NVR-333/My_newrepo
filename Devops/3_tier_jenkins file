@@ -1,0 +1,43 @@
+pipeline{
+    agent any
+    tools{
+        maven ("mymaven")
+    }
+    stages{
+        stage("code"){
+            steps{
+                git "https://github.com/NVR-333/dockerwebapp.git"
+            }
+        }
+        stage("CQN"){
+            steps{
+                withSonarQubeEnv("my_sonar") {
+                    sh "mvn clean verify sonar:sonar -Dsonar.projectKey=my_sonar"
+                }
+            }
+        }
+        stage("build"){
+            steps{
+                sh "mvn clean package"
+                sh "cp -r target Docker-app"
+            }
+        }
+        stage("Arifact"){
+            steps{
+                nexusArtifactUploader artifacts: [[artifactId: 'vprofile', classifier: '', file: 'target/vprofile-v3.war', type: 'war']], credentialsId: 'nexus', groupId: 'com.visualpathit', nexusUrl: '98.93.134.194:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'myrepo', version: 'v3'
+            }
+        }
+        stage("DockerFile"){
+            steps{
+                sh "docker build -t appimage Docker-app"
+                sh "docker build -t dbimage Docker-db"
+            }
+        }
+        stage("deploy"){
+            steps{
+                sh "docker run -d --name devopsdb -p 3306:3306 dbimage"
+                sh "docker run -itd --name myapp -p 1234:8080 --link devopsdb:mysqlcon appimage"
+            }
+        }
+    }
+}
