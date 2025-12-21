@@ -1,0 +1,48 @@
+---
+services:
+  aws:
+    image: shaikmustafa/dm
+    ports:
+      - "3333:80"
+    deploy:
+      replicas: 3
+    volumes:
+      - aws_vol:/usr/local/apache2/htdocs/
+    networks:
+      - aws_net
+  azure:
+    image: shaikmustafa/cycle
+    ports:
+      - "4444:80"
+    deploy:
+      replicas: 3
+    volumes:
+      - azure_vol:/usr/share/nginx/html
+    networks:
+      - azure_net
+  gcp:
+    image: shaikmustafa/mygame
+    ports:
+      - "5555:80"
+    deploy:
+      replicas: 3
+    volumes:
+      - gcp_vol:/usr/share/nginx/html
+    networks:
+      - gcp_net
+
+volumes:
+  aws_vol:
+  azure_vol:
+  gcp_vol:
+
+networks:
+  aws_net:
+    driver: overlay
+    attachable: true
+  azure_net:
+    driver: overlay
+    attachable: true
+  gcp_net:
+    driver: overlay
+    attachable: true
